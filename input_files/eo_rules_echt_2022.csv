@@ -1,0 +1,7 @@
+name;label;description;origin;created;language;severity;rule
+eo_1;;;;;;;a_PS_SWL_Banen_rato >= -M
+eo_2;;;;;;;a_PS_SWL_Loon_rato1 >= -M
+eo_3;;;;;;;a_PS_SWL_Loon_rato2 >= -M
+eo_4;;;;;;;b_PS_SWL_Loon_overig >= -M
+eo_5;;;;;;;SWL.Werknemers_in_vte_Gemiddeld >= -M
+eo_6;;;;;;;SWL.Lonen >= -M

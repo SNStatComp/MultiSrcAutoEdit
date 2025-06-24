@@ -1,0 +1,154 @@
+#Regel 8d
+if (((PS.Werknemers_in_vte_Gemiddeld/SWL.Werknemers_in_vte_Gemiddeld < 0.9) | (PS.Werknemers_in_vte_Gemiddeld/SWL.Werknemers_in_vte_Gemiddeld > 1.1)) & abs(PS.Werknemers_in_vte_Gemiddeld - SWL.Werknemers_in_vte_Gemiddeld) > 2)
+PS.Werknemers_in_vte_Gemiddeld <- SWL.Werknemers_in_vte_Gemiddeld
+
+
+#Regel 129b
+if ((PS.INKWRDE120000 > 0) & (PS.INKWRDE110000/PS.INKWRDE120000 > 0.95) & (PS.INKWRDE110000/PS.INKWRDE120000 < 1.05) & 
+    (PS.INKWRDE110000/WIA.Inkoopwaarde_Omzet > 0.95) & (PS.INKWRDE110000/WIA.Inkoopwaarde_Omzet < 1.05))
+{ 
+PS.INKWRDE100000 <- PS.INKWRDE100000 - PS.INKWRDE120000
+PS.Inkoopwaarde_Omzet <- PS.Inkoopwaarde_Omzet - PS.INKWRDE120000
+PS.BEDRLST310000 <- PS.BEDRLST310000 - PS.INKWRDE120000
+PS.Marge_omzet <- PS.Marge_omzet + PS.INKWRDE120000
+PS.RESULTS120000 <- PS.RESULTS120000 + PS.INKWRDE120000
+PS.RESULTS130000 <- PS.RESULTS130000 + PS.INKWRDE120000
+PS.EBITDA <- PS.EBITDA + PS.INKWRDE120000
+PS.Exploitatie_Overschot <- PS.Exploitatie_Overschot + PS.INKWRDE120000
+PS.INKWRDE120000 <- 0
+}
+
+
+#Regel 35f
+if ((PS.Marge_omzet / WIA.Marge_omzet > 0.95) & (PS.Marge_omzet / WIA.Marge_omzet < 1.05) & (DRT.Netto_Omzet_minus_accijnzen / WIA.Netto_Omzet_minus_accijnzen > 0.95)
+& (DRT.Netto_Omzet_minus_accijnzen / WIA.Netto_Omzet_minus_accijnzen < 1.05) & (PS.Netto_Omzet_minus_accijnzen / WIA.Netto_Omzet_minus_accijnzen < 0.9)
+& (abs(PS.Inkoopwaarde_Omzet - WIA.Inkoopwaarde_Omzet) > 100))
+{
+PS.BEDRLST310000 <- PS.BEDRLST310000 - PS.Inkoopwaarde_Omzet + WIA.Inkoopwaarde_Omzet
+PS.OPBRENG000000 <- PS.OPBRENG000000 - PS.Netto_Omzet_minus_accijnzen + WIA.Netto_Omzet_minus_accijnzen
+PS.Productie_SFO <- PS.Productie_SFO - PS.Netto_Omzet_minus_accijnzen + WIA.Netto_Omzet_minus_accijnzen 
+PS.Netto_Omzet_minus_accijnzen <- WIA.Netto_Omzet_minus_accijnzen
+PS.Inkoopwaarde_Omzet <- WIA.Inkoopwaarde_Omzet
+}
+
+
+#Regel 82b
+if ((RechtsvormCode %in% c('001')) & (PS.Lonen > 0) & is.na(SWL.Lonen))
+{
+PS.Exploitatie_Overschot <- PS.Exploitatie_Overschot + PS.Lonen
+PS.EBITDA <- PS.EBITDA + PS.Lonen
+PS.Arbeidskosten <- PS.Arbeidskosten - PS.Lonen 
+PS.PERSLST100000 <- PS.PERSLST100000 - PS.Lonen
+PS.BEDRLST310000 <- PS.BEDRLST310000 - PS.Lonen
+PS.RESULTS120000 <- PS.RESULTS120000 + PS.Lonen
+PS.RESULTS130000 <- PS.RESULTS130000 + PS.Lonen
+PS.Lonen <- 0
+PS.LOONSOM110002 <- 0 
+PS.LOONSOM110000 <- 0
+PS.PERSONS111000 <- 0
+PS.PERSONS122000 <- 0
+PS.SUBTOWP100000 <- 0
+PS.PERSONS110100 <- 0
+PS.PERSONS113000 <- 1
+}
+
+
+#Regel 70g
+if (!(RechtsvormCode %in% c('001','002','005','006','012','025')) & (PS.PERSONS113000 > 0) & (PS.Lonen > SWL.Lonen + 50 * PS.PERSONS113000) & 
+(PS.Lonen < SWL.Lonen + 5000 * PS.PERSONS113000) & (PS.BEDRLST349200 == 0 | is.na(PS.BEDRLST349200)))
+{
+PS.SUBTOWP200000 <- PS.SUBTOWP200000 - PS.PERSONS113000
+PS.PERSONS110000 <- PS.PERSONS110000 - (PS.PERSONS110000 / PS.PERSONS100000) * PS.PERSONS113000
+PS.PERSONS100000 <- PS.PERSONS100000 - PS.PERSONS113000
+PS.PERSONS113000 <- 0
+PS.BEDRLST349200 <- PS.Lonen - SWL.Lonen
+PS.Lonen <- SWL.Lonen
+PS.Arbeidskosten <- PS.Arbeidskosten - PS.BEDRLST349200
+PS.BEDRLST340900 <- PS.BEDRLST340900 + PS.BEDRLST349200
+PS.BEDRLSH340900 <- PS.BEDRLST340900
+}
+
+
+#Regel 81b, deze moet draaien na regel 70 
+if ( !(RechtsvormCode %in% c('001','002','005','006','012','025')) & (PS.PERSONS113000 > 0)  )
+{
+PS.SUBTOWP200000 <- PS.SUBTOWP200000 - PS.PERSONS113000
+PS.PERSONS110000 <- PS.PERSONS110000 - (PS.PERSONS110000 / PS.PERSONS100000) * PS.PERSONS113000
+PS.PERSONS100000 <- PS.PERSONS100000 - PS.PERSONS113000
+PS.PERSONS113000 <- 0
+}
+
+
+#Regel 151a
+if ((RechtsvormCode %in% c('001','002','005','006','012','025')) & (PS.Lonen - SWL.Lonen > 40) & (PS.PERSONS113000 > 0))
+{
+PS.Exploitatie_Overschot <- PS.Exploitatie_Overschot + PS.Lonen - SWL.Lonen
+PS.EBITDA <- PS.EBITDA + PS.Lonen - SWL.Lonen
+PS.Arbeidskosten <- PS.Arbeidskosten - PS.Lonen + SWL.Lonen 
+PS.PERSLST100000 <- PS.PERSLST100000 - PS.Lonen + SWL.Lonen
+PS.BEDRLST310000 <- PS.BEDRLST310000 - PS.Lonen + SWL.Lonen
+PS.RESULTS120000 <- PS.RESULTS120000 + PS.Lonen - SWL.Lonen
+PS.RESULTS130000 <- PS.RESULTS130000 + PS.Lonen - SWL.Lonen
+PS.Lonen <- SWL.Lonen
+}
+
+
+#Regel 131.1a
+if (is.na(PS.LOONSOM121300)) PS.LOONSOM121300 <- 0
+
+#Regel 131.2a
+if (is.na(PS.LOONSOM121200)) PS.LOONSOM121200 <- 0
+
+#Regel 131.3a
+if (is.na(PS.LOONSOM110002)) PS.LOONSOM110002 <- 0
+
+#Regel 131.4a
+if ((PS.LOONSOM110002 == 0) & (PS.LOONSOM110000 > 0)) PS.LOONSOM110002 <- PS.LOONSOM110000
+
+#Regel 131.5b
+if ((PS.LOONSOM110002 == 0) & (PS.LOONSOM121300 + PS.LOONSOM121200 > 0) & ((WIA.Arbeidskosten == 0) | is.na(WIA.Arbeidskosten)))
+{
+PS.PERSLST100000 <- PS.PERSLST100000 - (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.PERSLSH100000 <- PS.PERSLST100000
+PS.BEDRLST310000 <- PS.BEDRLST310000 - (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.RESULTS120000 <- PS.RESULTS120000 + (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.RESULTS130000 <- PS.RESULTS130000 + (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.Exploitatie_Overschot <- PS.Exploitatie_Overschot + (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.EBITDA <- PS.EBITDA + (PS.LOONSOM121300 + PS.LOONSOM121200)
+PS.LOONSOM121300 <- 0
+PS.LOONSOM121200 <- 0
+}
+
+
+#Regel 152a
+if ((SFGO.Arbeidskosten > 0) & !is.na(PS.Arbeidskosten) & (SWL.Lonen > 0) & (PS.Lonen / SFGO.Arbeidskosten > 0.95)  & (PS.Lonen / SFGO.Arbeidskosten < 1.05) & 
+    (PS.Lonen / SWL.Lonen > 0.95)  & (PS.Lonen / SWL.Lonen < 1.05))
+SFGO.Arbeidskosten <- PS.Arbeidskosten
+
+
+#Regel 32f
+if (!is.na(WIA.Lonen)  & !is.na(SWL.Lonen)  & (WIA.Lonen/SWL.Lonen < 0.9 | WIA.Lonen/SWL.Lonen > 1.1) & (abs(WIA.Lonen - SWL.Lonen) > 100))
+{
+WIA.Arbeidskosten <- WIA.Arbeidskosten - WIA.Lonen + SWL.Lonen
+WIA.Lonen <- SWL.Lonen
+}
+
+
+#Regel 33.1b
+if ((abs(WIA.V_1888) > 10) & (abs(WIA.Netto_Omzet_minus_accijnzen - WIA.V_1888 - PS.Netto_Omzet_minus_accijnzen) < 5))
+WIA.Netto_Omzet_minus_accijnzen <- PS.Netto_Omzet_minus_accijnzen
+
+#Regel 33.2b
+if ((PS.BEDRLST345200 > 10) & (abs(WIA.Arbeidskosten - PS.BEDRLST345200 - PS.Arbeidskosten) < 5))
+WIA.Arbeidskosten <- PS.Arbeidskosten
+
+#Regel 33.3b
+if ((PS.INKWRDE120000 > 10) & (abs(WIA.Inkoopwaarde_Omzet + PS.INKWRDE120000 - PS.Inkoopwaarde_Omzet) < 5))
+WIA.Inkoopwaarde_Omzet <- PS.Inkoopwaarde_Omzet
+
+
+#Regel 69b
+if ((WIA.Netto_Omzet_minus_accijnzen - PS.Netto_Omzet_minus_accijnzen)/PS.OPBRENG111000 > 0.98
+& (WIA.Netto_Omzet_minus_accijnzen - PS.Netto_Omzet_minus_accijnzen)/PS.OPBRENG111000 < 1.02)
+WIA.Netto_Omzet_minus_accijnzen <- PS.Netto_Omzet_minus_accijnzen
+

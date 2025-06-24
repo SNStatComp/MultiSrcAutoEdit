@@ -1,0 +1,27 @@
+"name";"rule";"condition"
+"Netto_Omzet_minus_accijnzen";"PS.Netto_Omzet_minus_accijnzen == PS.OMZETPS210000 - PS.BEDRLST349610";TRUE
+"Omzet_Industrieel_minus_accijnzen";"PS.Omzet_Industrieel_minus_accijnzen == PS.OMZETPS211150 + PS.OMZETPS211140 + PS.OMZETPS211250 + PS.EXPORTS211001 - PS.BEDRLST349610";TRUE
+"Omzet_Handel_en_Overig";"PS.Omzet_Handel_en_Overig == PS.OMZETPS212000 + PS.OMZETPS213000 + PS.OMZETPS212100 + PS.OMZETPS212200 + PS.OMZETPS212300 + PS.OMZETPS212900 + PS.OMZETPS213008 + PS.OMZETPS213009 + PS.OMZETPS213100 + PS.OMZETPS213200 + PS.OMZETPS213300 + PS.OMZETPS213400 + PS.OMZETPS213500 + PS.OMZETPS213610 + PS.OMZETPS213700 + PS.OMZETPS213900 + PS.OMZETPS213910 + PS.OMZETPS214000 + PS.OMZETPS215000";TRUE
+"Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten";"PS.Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten == PS.OMZETPS210000 - PS.BEDRLST349610 - PS.OMZETPS210002";TRUE
+"Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten";"PS.Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten == PS.OMZETPS211150 - PS.BEDRLST349610 - PS.OMZETPS210002";TRUE
+"Omzet_Industriele_Diensten";"PS.Omzet_Industriele_Diensten == PS.OMZETPS211250 + PS.EXPORTS211001";TRUE
+"Werknemers_in_vte_Gemiddeld";"PS.Werknemers_in_vte_Gemiddeld == PS.PERSONS110100";TRUE
+"Productie_SFO";"PS.Productie_SFO == PS.OPBRENG000000 + PS.EXPORTS229002 - PS.SUBSIDI150000 - PS.SUBSIDI160000 - PS.SUBSIDI170000 - PS.SUBSIDI180000 - PS.SUBSIDI130000";TRUE
+"Subsidies";"PS.Subsidies == PS.SUBSIDI140000 + PS.SUBSIDI150000 +PS.SUBSIDI160000 + PS.SUBSIDI170000 + PS.SUBSIDI180000 + PS.SUBSIDI130000";TRUE
+"Afschrijvingen_excl_die_op_operational_lease";"PS.Afschrijvingen_excl_die_op_operational_lease == PS.AFSCHRG110000 + PS.AFSCHRG110010 + PS.AFSCHRG110020 + PS.AFSCHRG110090";TRUE
+"Afschrijvingen_op_operational_Lease";"PS.Afschrijvingen_op_operational_Lease == PS.AFSCHRG110030";TRUE
+"Reversals_Impairments";"PS.Reversals_Impairments == PS.IMPAIRM100000";TRUE
+"Arbeidskosten";"PS.Arbeidskosten == PS.LOONSOM110002 + PS.LOONSOM121200 + PS.LOONSOM121300 + PS.BEDRLST345500 + PS.BEDRLST345600 + PS.BEDRLST345700 + PS.BEDRLST345900 + PS.SUBSIDI140000 + PS.INKWRDE120310 + PS.INKWRDE120320 + PS.INKWRDE120330";TRUE
+"Saldo_boekwinsten_verliezen_op_Verkopen_iMVA";"PS.Saldo_boekwinsten_verliezen_op_Verkopen_iMVA == PS.BUIBATN101000";TRUE
+"Saldo_Uitzonderlijke_Baten_Lasten";"PS.Saldo_Uitzonderlijke_Baten_Lasten == PS.BUIBATN109000";TRUE
+"Exploitatie_Overschot";"PS.Exploitatie_Overschot == PS.RESULTS120000 + PS.VOORZNG101000 + PS.IMPAIRM100000";TRUE
+"EBITDA";"PS.EBITDA == PS.RESULTS120000 + PS.VOORZNG101000 + PS.AFSCHRG110000 + PS.AFSCHRG110010 + PS.AFSCHRG110020 + PS.AFSCHRG110090 + PS.FINREST100010";TRUE
+"Financieel_Resultaat_Op_Lease";"PS.Financieel_Resultaat_Op_Lease == PS.FINREST100010";TRUE
+"Lonen";"PS.Lonen == PS.LOONSOM110002 + PS.ONTVANG120000 + PS.SUBSIDI140000 + PS.INKWRDE120310";TRUE
+"Sociale_lasten";"PS.Sociale_lasten == PS.LOONSOM121300 + PS.INKWRDE120320";TRUE
+"Pensioenlasten";"PS.Pensioenlasten == PS.LOONSOM121200 + PS.INKWRDE120330";TRUE
+"Overige_personeelskosten";"PS.Overige_personeelskosten == PS.BEDRLST345500 + PS.BEDRLST345600 + PS.BEDRLST345700 + PS.BEDRLST345900 + PS.SUBSIDI140000";TRUE
+"Inkoopwaarde_Omzet";"PS.Inkoopwaarde_Omzet == PS.INKWRDE100000";TRUE
+"Uitbesteed_werk";"PS.Uitbesteed_werk == PS.INKWRDE132000";TRUE
+"Inkoopwaarde_Omzet_excl_uitbesteed";"PS.Inkoopwaarde_Omzet_excl_uitbesteed == PS.INKWRDE100000 - PS.INKWRDE132000";TRUE
+"Marge_omzet";"PS.Marge_omzet == PS.OMZETPS210000 - PS.BEDRLST349610 - PS.INKWRDE100000";TRUE

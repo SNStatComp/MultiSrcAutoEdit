@@ -1,0 +1,44 @@
+
+#Aanpassing 92a
+if (GkSbsGecoordineerd1D == '1')
+{
+PS.Netto_Omzet_minus_accijnzen <- 3
+PS.Omzet_Industrieel_minus_accijnzen <- 2
+PS.Omzet_Handel_en_Overig <- 2
+PS.Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten <- 3
+PS.Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten <- 2
+PS.Omzet_Industriele_Diensten <- 2
+}
+
+#Aanpassing 100b
+if ((GkSbsGecoordineerdSML == 'S') & 
+(DRT.Netto_Omzet_minus_accijnzen.waarde / WIA.Netto_Omzet_minus_accijnzen.waarde > 0.95) & (DRT.Netto_Omzet_minus_accijnzen.waarde / WIA.Netto_Omzet_minus_accijnzen.waarde < 1.05) &
+((PS.Netto_Omzet_minus_accijnzen.waarde / DRT.Netto_Omzet_minus_accijnzen.waarde < 0.9) | (PS.Netto_Omzet_minus_accijnzen.waarde / DRT.Netto_Omzet_minus_accijnzen.waarde > 1.1)) & 
+(abs(PS.Netto_Omzet_minus_accijnzen.waarde - DRT.Netto_Omzet_minus_accijnzen.waarde) > 50))
+{
+PS.Netto_Omzet_minus_accijnzen <- 3
+PS.Omzet_Industrieel_minus_accijnzen <- 2
+PS.Omzet_Handel_en_Overig <- 2
+PS.Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten <- 3
+PS.Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten <- 2
+PS.Omzet_Industriele_Diensten <- 2
+}
+
+#Aanpassing 10c
+if ((GkSbsGecoordineerd1D == '4') & 
+(DRT.Netto_Omzet_minus_accijnzen.waarde / WIA.Netto_Omzet_minus_accijnzen.waarde > 0.95) & (DRT.Netto_Omzet_minus_accijnzen.waarde / WIA.Netto_Omzet_minus_accijnzen.waarde < 1.05) &
+((PS.Netto_Omzet_minus_accijnzen.waarde / DRT.Netto_Omzet_minus_accijnzen.waarde < 0.9) | (PS.Netto_Omzet_minus_accijnzen.waarde / DRT.Netto_Omzet_minus_accijnzen.waarde > 1.1)) & 
+(abs(PS.Netto_Omzet_minus_accijnzen.waarde - DRT.Netto_Omzet_minus_accijnzen.waarde) > 50) &
+(SWL.Lonen.waarde / WIA.Lonen.waarde > 0.95) & (SWL.Lonen.waarde / WIA.Lonen.waarde < 1.05) &
+((PS.Lonen.waarde / SWL.Lonen.waarde < 0.9) | (PS.Lonen.waarde / SWL.Lonen.waarde > 1.1)) & 
+(abs(PS.Lonen.waarde - SWL.Lonen.waarde) > 50))
+{
+PS.Netto_Omzet_minus_accijnzen <- 3
+PS.Omzet_Industrieel_minus_accijnzen <- 2
+PS.Omzet_Handel_en_Overig <- 2
+PS.Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten <- 3
+PS.Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten <- 2
+PS.Omzet_Industriele_Diensten <- 2
+PS.Arbeidskosten <- 0.5
+PS.Marge_omzet <- 1
+}

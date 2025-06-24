@@ -1,0 +1,1494 @@
+---
+title: "Evaluation of multisource automatic editing"
+author: "Sander Scholtus, Rob Willems, Jeffrey Hoogland, Arnout van Delden"
+date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+###########################
+
+# Set input parameters ----
+
+## which categories of manually edited data to include in analysis?
+analyse_categories <- c(1, 2, 5)
+
+## which variables to include in analysis?
+# (this excludes variables for which the definition was updated
+# after analysis on the sample started)
+analyse_variables <- c('Afschrijvingen_excl_die_op_operational_lease',
+                       'Afschrijvingen_op_operational_Lease',
+                       'Arbeidskosten',
+                       'EBITDA',
+                       'Exploitatie_Overschot',
+                       'Export',
+                       'Financieel_Resultaat_Op_Lease',
+                       'Import',
+                       'Inkoopwaarde_Omzet',
+                       'Investeringen_immateriele_vaste_activa_INIVA_SFGO',
+                       'Investeringen_immateriele_vaste_activa_INIVA_WIA',
+                       'Investeringen_materiele_vaste_activa_INIVA_SFGO',
+                       'Investeringen_materiele_vaste_activa_INIVA_WIA',
+                       'Investeringen_op_lease_INIVA_SFGO',
+                       'Lonen',
+                       'Marge_omzet',
+                       'Netto_Omzet_minus_accijnzen',
+                       'Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten',
+                       'Omzet_Industrieel_minus_accijnzen',
+                       'Omzet_Industriele_Diensten',
+                       'Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten',
+                       'Productie_SFO',
+                       'Reversals_Impairments',
+                       'Saldo_boekwinsten_verliezen_op_Verkopen_iMVA',
+                       'Saldo_Uitzonderlijke_Baten_Lasten',
+                       'Subsidies',
+                       'Werknemers_in_vte_Gemiddeld'
+)
+
+## for which (combinations of) variables should scatter plots be made?
+
+variables_plot_univariate <- list(
+  c(variable_name = 'Netto_Omzet_minus_accijnzen',
+    bron = 'PS', useLog10 = TRUE),
+  c(variable_name = 'Netto_Omzet_minus_accijnzen',
+    bron = 'DRT', useLog10 = TRUE),
+  c(variable_name = 'Netto_Omzet_minus_accijnzen',
+    bron = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Lonen',
+    bron = 'PS', useLog10 = TRUE),
+  c(variable_name = 'Lonen',
+    bron = 'SWL', useLog10 = TRUE),
+  c(variable_name = 'Lonen',
+    bron = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Werknemers_in_vte_Gemiddeld',
+    bron = 'PS', useLog10 = TRUE),
+  c(variable_name = 'Werknemers_in_vte_Gemiddeld',
+    bron = 'SWL', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_materiele_vaste_activa_INIVA_WIA',
+    bron = 'INIVA', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_materiele_vaste_activa_INIVA_WIA',
+    bron = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_immateriele_vaste_activa_INIVA_WIA',
+    bron = 'INIVA', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_immateriele_vaste_activa_INIVA_WIA',
+    bron = 'WIA', useLog10 = TRUE)
+)
+ 
+
+variables_plot_bivariate_twosources <- list(
+  c(variable_name = 'Netto_Omzet_minus_accijnzen',
+    bron_x = 'PS', bron_y = 'DRT', useLog10 = TRUE),
+  c(variable_name = 'Netto_Omzet_minus_accijnzen',
+    bron_x = 'PS', bron_y = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Lonen',
+    bron_x = 'PS', bron_y = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Lonen',
+    bron_x = 'PS', bron_y = 'SWL', useLog10 = TRUE),
+  c(variable_name = 'Werknemers_in_vte_Gemiddeld',
+    bron_x = 'PS', bron_y = 'SWL', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_materiele_vaste_activa_INIVA_WIA',
+    bron_x = 'INIVA', bron_y = 'WIA', useLog10 = TRUE),
+  c(variable_name = 'Investeringen_immateriele_vaste_activa_INIVA_WIA',
+    bron_x = 'INIVA', bron_y = 'WIA', useLog10 = TRUE)
+)
+
+variables_plot_bivariate_different <- list(
+  c(variable_name_x = 'Lonen',
+    variable_name_y = 'Arbeidskosten',
+    useLog10 = TRUE),
+  c(variable_name_x = 'Netto_Omzet_minus_accijnzen',
+    variable_name_y = 'Productie_SFO',
+    useLog10 = TRUE),
+  c(variable_name_x = 'Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten',
+    variable_name_y = 'Netto_Omzet_minus_accijnzen',
+    useLog10 = TRUE),
+  c(variable_name_x = 'Investeringen_materiele_vaste_activa_INIVA_WIA',
+    variable_name_y = 'Investeringen_materiele_vaste_activa_INIVA_SFGO',
+    useLog10 = TRUE),
+  c(variable_name_x = 'Investeringen_immateriele_vaste_activa_INIVA_WIA',
+    variable_name_y = 'Investeringen_immateriele_vaste_activa_INIVA_SFGO',
+    useLog10 = TRUE)
+)
+
+
+###########################
+
+
+# Load relevant R packages
+library(validate)
+library(glue)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(openxlsx)
+
+PID <- tolower(substring(Sys.getenv("RSTUDIO_USER_IDENTITY")[[1]], 1, 4))
+
+InputFolder <- "//Cbsp.nl/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Input"
+OutputFolder <- "//Cbsp.nl/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Output"
+DataFolder <- "//Cbsp.nl/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Data"
+
+if (.Platform$OS.type == "unix") {
+  InputFolder <- stringr::str_glue("/home/{PID}@cbsp.nl/shares/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Input")
+  OutputFolder <- stringr::str_glue("/home/{PID}@cbsp.nl/shares/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Output")
+  DataFolder <- stringr::str_glue("/home/{PID}@cbsp.nl/shares/productie/projecten/EBM/305311EBN2xPOC/Werk/POC_IT/Eurostat grant EBS 2023/Automatisch gaafmaken/Data")
+}
+
+# Source files ----
+InputFolder <- file.path(InputFolder, glue::glue(PID))
+OutputFolder <- file.path(OutputFolder, glue::glue(PID))
+
+# Load constants ----
+source(file_constants)
+
+# Set file names ----
+FILE_NAME_DATA_0 <- file.path(InputFolder, stringr::str_glue("data_{YEAR}_sel.rds"))
+
+if (use_deductive_correction) {
+  FILE_NAME_DATA_1 <- file.path(OutputFolder, stringr::str_glue("{prefix_input}data_{YEAR}_sel.rds"))
+} else {
+  FILE_NAME_DATA_1 <- FILE_NAME_DATA_0
+}
+
+FILE_NAME_DATA_2 <- file.path(OutputFolder, stringr::str_glue("{prefix_output}results_interstat_{YEAR}.csv"))
+FILE_NAME_DATA_3 <- file.path(OutputFolder, stringr::str_glue("{prefix_output}results_final_{YEAR}.csv"))
+
+FILE_NAME_ERRORS_2 <- file.path(OutputFolder, stringr::str_glue("{prefix_output}errors_interstat_{YEAR}.csv"))
+
+FILE_NAME_STATUS_AG <- file.path(OutputFolder, stringr::str_glue("{prefix_output}status_duration_{YEAR}.csv"))
+
+FILE_NAME_STATUS_MANUAL <- file.path(DataFolder, "Status_bevinding_analist.csv")
+FILE_NAME_DATA_MANUAL <- file.path(InputFolder, "results_analysts.csv")
+
+# Load files ----
+read_file <- function(file_name) {
+  if (grepl('[.]rds$', file_name)) {
+    input_data <- readRDS(file_name)
+  } else if (grepl('[.]csv$', file_name)) {
+    input_data <- read.csv2(file_name, stringsAsFactors = FALSE)
+  } else {
+    stop('Unknown file format in read_file!')
+  }
+  return(input_data)
+}
+
+data_ag_0 <- read_file(FILE_NAME_DATA_0)
+data_ag_1 <- read_file(FILE_NAME_DATA_1)
+data_ag_2 <- read_file(FILE_NAME_DATA_2)
+data_ag_3 <- read_file(FILE_NAME_DATA_3)
+
+errors_ag_2 <- read_file(FILE_NAME_ERRORS_2)
+
+status_ag <- read_file(FILE_NAME_STATUS_AG)
+
+status_manual <- read_file(FILE_NAME_STATUS_MANUAL)
+data_manual <- read_file(FILE_NAME_DATA_MANUAL)
+```
+
+Name of input data file: `r stringr::str_glue("data_{YEAR}_sel.rds")`
+
+Name of data file after deductive editing: `r stringr::str_glue("{prefix_input}data_{YEAR}_sel.rds")`
+
+Name of data file after automatic editing: `r stringr::str_glue("{prefix_output}results_final_{YEAR}.csv")`
+
+
+
+## Information about automatic editing
+
+```{r info_auto_editing, echo = FALSE}
+status_ag <- status_ag %>%
+  dplyr::left_join(data_ag_0 %>%
+                     dplyr::select(BE_ID, SbiGecoordineerd3D),
+                   by = 'BE_ID') %>%
+  dplyr::mutate(status_interstat_description = status_interstat,
+                status_ps_description = status_ps) %>%
+  dplyr::mutate(dplyr::across(c(status_interstat_description, 
+                                status_ps_description),
+                              ~dplyr::case_match(.x,
+                                                 0 ~ 'optimal solution found',
+                                                 1 ~ 'sub optimal solution',
+                                                 2 ~ 'infeasible',
+                                                 3 ~ 'unbounded',
+                                                 4 ~ 'degenerate',
+                                                 5 ~ 'numerical failure',
+                                                 6 ~ 'process aborted',
+                                                 7 ~ 'timeout',
+                                                 9 ~ 'presolved',
+                                                 10 ~ 'branch and bound failed',
+                                                 11 ~ 'branch and bound stopped',
+                                                 12 ~ 'a feasible branch and bound found',
+                                                 13 ~ 'no feasible branch and bound found',
+                                                 NA ~ 'NA')))
+
+tab_status_step1 <- status_ag %>%
+  dplyr::group_by(SbiGecoordineerd3D,
+                  Status = status_interstat,
+                  Status_description = status_interstat_description) %>%
+  dplyr::summarise(n = n(), .groups = 'drop') %>%
+  dplyr::left_join(status_ag %>%
+                     dplyr::group_by(SbiGecoordineerd3D) %>%
+                     dplyr::summarise(ntot = n(), .groups = 'drop'),
+                   by = 'SbiGecoordineerd3D') %>%
+  dplyr::mutate(perc = n / ntot,
+                ntot = NULL)
+
+tab_status_step1 <- rbind(tab_status_step1,
+                          status_ag %>%
+                            dplyr::group_by(Status = status_interstat,
+                                            Status_description = status_interstat_description) %>%
+                            dplyr::summarise(n = n(), .groups = 'drop') %>%
+                            dplyr::mutate(perc = n / nrow(status_ag),
+                                          SbiGecoordineerd3D = 'total'))
+
+tab_time_step1 <- status_ag %>%
+  dplyr::group_by(SbiGecoordineerd3D) %>%
+  dplyr::summarise(n = n(),
+                   n_solved = sum(status_interstat %in% c(0,1,3,4,9,12), na.rm = TRUE),
+                   duration_mean = mean(duration_interstat, na.rm = TRUE),
+                   duration_med = median(duration_interstat, na.rm = TRUE),
+                   .groups = 'keep')
+
+tab_time_step1 <- rbind(tab_time_step1,
+                        status_ag %>%
+                          dplyr::summarise(n = n(),
+                                           n_solved = sum(status_interstat %in% c(0,1,3,4,9,12), na.rm = TRUE),
+                                           duration_mean = mean(duration_interstat, na.rm = TRUE),
+                                           duration_med = median(duration_interstat, na.rm = TRUE)) %>%
+                          dplyr::mutate(SbiGecoordineerd3D = 'total'))
+
+tab_status_step3 <- status_ag %>%
+  dplyr::group_by(SbiGecoordineerd3D,
+                  Status = status_ps,
+                  Status_description = status_ps_description) %>%
+  dplyr::summarise(n = n(), .groups = 'drop') %>%
+  dplyr::left_join(status_ag %>%
+                     dplyr::group_by(SbiGecoordineerd3D) %>%
+                     dplyr::summarise(ntot = n(), .groups = 'drop'),
+                   by = 'SbiGecoordineerd3D') %>%
+  dplyr::mutate(perc = n / ntot,
+                ntot = NULL)
+
+tab_status_step3 <- rbind(tab_status_step3,
+                          status_ag %>%
+                            dplyr::group_by(Status = status_ps,
+                                            Status_description = status_ps_description) %>%
+                            dplyr::summarise(n = n(), .groups = 'drop') %>%
+                            dplyr::mutate(perc = n / nrow(status_ag),
+                                          SbiGecoordineerd3D = 'total'))
+
+tab_time_step3 <- status_ag %>%
+  dplyr::group_by(SbiGecoordineerd3D) %>%
+  dplyr::summarise(n = n(),
+                   n_solved = sum(status_ps %in% c(0,1,3,4,9,12), na.rm = TRUE),
+                   duration_mean = mean(duration_ps, na.rm = TRUE),
+                   duration_med = median(duration_ps, na.rm = TRUE),
+                   .groups = 'keep')
+
+tab_time_step3 <- rbind(tab_time_step3,
+                        status_ag %>%
+                          dplyr::summarise(n = n(),
+                                           n_solved = sum(status_ps %in% c(0,1,3,4,9,12), na.rm = TRUE),
+                                           duration_mean = mean(duration_ps, na.rm = TRUE),
+                                           duration_med = median(duration_ps, na.rm = TRUE)) %>%
+                          dplyr::mutate(SbiGecoordineerd3D = 'total'))
+```
+
+Status of error localization of common variables (step 1):
+
+```{r, echo = FALSE}
+knitr::kable(tab_status_step1 %>%
+               dplyr::mutate(perc = round(100*perc, digits = 1)))
+```
+
+Timing of error localization of common variables (step 1):
+
+```{r, echo = FALSE}
+knitr::kable(tab_time_step1 %>%
+               dplyr::mutate(dplyr::across(dplyr::contains('duration'),
+                                           ~round(.x, digits = 2))))
+```
+
+Status of error localization of PS variables (step 3):
+
+```{r, echo = FALSE}
+knitr::kable(tab_status_step3 %>%
+               dplyr::mutate(perc = round(100*perc, digits = 1)))
+```
+
+Timing of error localization of PS variables (step 3):
+
+```{r, echo = FALSE}
+knitr::kable(tab_time_step3 %>%
+               dplyr::mutate(dplyr::across(dplyr::contains('duration'),
+                                           ~round(.x, digits = 2))))
+```
+
+
+## Evaluation measures that use manually edited data
+
+```{r prepare_comparison_manual, echo = FALSE}
+
+## select records from data files
+
+comp_manual <- status_manual %>%
+  dplyr::filter(Categorie %in% analyse_categories) %>%
+  dplyr::select(c(BE_ID, Categorie)) %>%
+  dplyr::arrange(BE_ID)
+
+frame_manual <- comp_manual %>%
+  dplyr::left_join(data_ag_0 %>%
+                     dplyr::select(c(BE_ID, OG_ID,
+                                     SbiGecoordineerd3D, GkSbsGecoordineerd1D)),
+                   by = 'BE_ID') %>%
+  dplyr::arrange(BE_ID)
+
+comp_manual <- comp_manual %>% dplyr::select(-Categorie)
+
+comp_data_manual <- data_manual %>%
+  dplyr::filter(el_interstat_nerror == 0) %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(comp_manual, by = 'BE_ID') %>%
+  dplyr::arrange(BE_ID)
+
+comp_manual <- comp_manual %>%
+  dplyr::inner_join(comp_data_manual %>% dplyr::select(BE_ID), by = 'BE_ID')
+
+frame_manual <- frame_manual %>%
+  dplyr::inner_join(comp_data_manual %>% dplyr::select(BE_ID), by = 'BE_ID')
+
+# for manually edited data: remove DRT and WIA values for units that do not
+# satisfy the selection criteria used as input for automatic editing
+comp_data_manual <- comp_data_manual %>%
+  dplyr::left_join(data_ag_0 %>%
+                     dplyr::select(c(BE_ID, DRT.exist, WIA.exist)),
+                   by = 'BE_ID') %>%
+  dplyr::mutate(dplyr::across(dplyr::starts_with('DRT.') & dplyr::contains(analyse_variables),
+                              function(x) x * .data[['DRT.exist']]),
+                dplyr::across(dplyr::starts_with('WIA.') & dplyr::contains(analyse_variables),
+                              function(x) x * .data[['WIA.exist']])) %>%
+  dplyr::mutate(DRT.exist = NULL,
+                WIA.exist = NULL)
+
+comp_data_ag_0 <- data_ag_0 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(comp_manual, by = 'BE_ID') %>%
+  dplyr::select(names(comp_data_manual)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_data_ag_1 <- data_ag_1 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(comp_manual, by = 'BE_ID') %>%
+  dplyr::select(names(comp_data_manual)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_data_ag_2 <- data_ag_3 %>%
+  dplyr::select(BE_ID) %>%
+  dplyr::left_join(data_ag_2 %>%
+                     dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))),
+                   by = 'BE_ID') %>%
+  dplyr::inner_join(comp_manual, by = 'BE_ID') %>%
+  dplyr::select(c(names(comp_data_manual),
+                  dplyr::starts_with('Echt.'))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_data_ag_3 <- data_ag_3 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(comp_manual, by = 'BE_ID') %>%
+  dplyr::select(c(names(comp_data_manual),
+                  dplyr::starts_with('Echt.'))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+
+## select (or create) records from error files
+
+## Compare final manually edited data to input data of automatic editing
+
+## In comp_data_manual and comp_data_ag_0, missing values were treated differently
+## when deriving the common variables.
+## To assess the quality of automatic editing in a fair way,
+## set missing values in comp_data_manual for which comp_data_ag_0 == 0 equal to 0.
+## Also, ignore any manual changes that are less than 1, as these are most likely
+## due to rounding differences between data in the dashboard and in automatic editing.
+comp_data_manual[is.na(comp_data_manual) & !is.na(comp_data_ag_0) & comp_data_ag_0 == 0] <- 0
+
+comp_errors_manual <- cbind(
+  comp_data_manual %>% dplyr::select(BE_ID),
+  abs(comp_data_manual %>% dplyr::select(dplyr::ends_with(analyse_variables)) -
+        comp_data_ag_0 %>% dplyr::select(dplyr::ends_with(analyse_variables))) >= 1
+) %>%
+  dplyr::arrange(BE_ID)
+
+comp_errors_ag_1 <- cbind(
+  comp_data_ag_1 %>% dplyr::select(BE_ID),
+  (comp_data_ag_1 %>% dplyr::select(dplyr::ends_with(analyse_variables)) !=
+     comp_data_ag_0 %>% dplyr::select(dplyr::ends_with(analyse_variables)))
+) %>%
+  dplyr::select(names(comp_errors_manual)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_errors_ag_2a <- comp_data_ag_3 %>%
+  dplyr::select(BE_ID) %>%
+  dplyr::left_join(errors_ag_2 %>%
+                     dplyr::select(c(BE_ID,
+                                     (dplyr::ends_with(analyse_variables) & !dplyr::starts_with('PS.')))),
+                   by = 'BE_ID')
+
+namen <- comp_data_ag_3 %>%
+  dplyr::select(dplyr::ends_with(analyse_variables) & dplyr::starts_with('PS.')) %>%
+  colnames()
+
+comp_errors_ag_2b <- cbind(
+  comp_data_ag_3 %>% dplyr::select(BE_ID),
+  abs(comp_data_ag_3 %>% dplyr::select(dplyr::all_of(namen)) -
+        comp_data_ag_0 %>% dplyr::select(dplyr::all_of(namen))) >= 1
+)
+
+comp_errors_ag_2 <- comp_errors_ag_2a %>%
+  dplyr::inner_join(comp_errors_ag_2b, by = 'BE_ID') %>%
+  dplyr::select(names(comp_errors_manual)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+# also create an overview of errors found anywhere during automatic editing
+
+comp_errors_ag_12 <- rbind(comp_errors_ag_1 %>%
+                             dplyr::select(dplyr::all_of(names(comp_errors_ag_2))),
+                           comp_errors_ag_2) %>%
+  dplyr::group_by(BE_ID) %>%
+  dplyr::summarise(dplyr::across(tidyr::everything(),
+                                 function(x) ifelse(all(is.na(x)),
+                                                    NA,
+                                                    as.logical(max(x, na.rm = TRUE))))) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(dplyr::any_of(names(comp_errors_manual))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+```
+
+Number of available manually edited records:
+```{r, echo = FALSE}
+knitr::kable(frame_manual %>%
+               dplyr::group_by(SbiGecoordineerd3D) %>%
+               summarise(n = n()))
+```
+
+### Errors found
+
+```{r manual1, echo=FALSE}
+
+count_errors <- function(comp_errors) {
+  tmp <- frame_manual %>%
+    dplyr::left_join(comp_errors, by = 'BE_ID') %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(count_errors =
+                    sum(dplyr::across(dplyr::ends_with(analyse_variables)), na.rm = TRUE),
+                  count_errors_PS_only = 
+                    sum(dplyr::across(dplyr::ends_with(analyse_variables) & dplyr::starts_with('PS.')), na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(SbiGecoordineerd3D) %>%
+    dplyr::summarise(count = sum(count_errors),
+                     count_PS_only = sum(count_errors_PS_only))
+  
+  tmp <- rbind(tmp,
+               tmp %>%
+                 dplyr::summarise(dplyr::across(-SbiGecoordineerd3D, ~sum(.x, na.rm = TRUE))) %>%
+                 dplyr::mutate(SbiGecoordineerd3D = 'total'))
+  return(tmp)
+}
+
+tmp_manual <- count_errors(comp_errors_manual)
+tmp_ag_12 <- count_errors(comp_errors_ag_12)
+tmp_ag_1 <- count_errors(comp_errors_ag_1)
+tmp_ag_2 <- count_errors(comp_errors_ag_2)
+
+table_manual1 <- tmp_manual %>%
+  dplyr::select(-dplyr::ends_with('PS_only')) %>%
+  dplyr::rename(count_manual = count) %>%
+  full_join(tmp_ag_12 %>%
+              dplyr::select(-dplyr::ends_with('PS_only')) %>%
+              dplyr::rename(count_auto_all = count),
+            by = 'SbiGecoordineerd3D') %>%
+  full_join(tmp_ag_1 %>%
+              dplyr::select(-dplyr::ends_with('PS_only')) %>%
+              dplyr::rename(count_auto_deductive = count),
+            by = 'SbiGecoordineerd3D') %>%
+  full_join(tmp_ag_2 %>%
+              dplyr::select(-dplyr::ends_with('PS_only')) %>%
+              dplyr::rename(count_auto_errorloc = count),
+            by = 'SbiGecoordineerd3D')
+
+table_manual1_PS_only <- tmp_manual %>%
+  dplyr::select(-dplyr::ends_with('count')) %>%
+  dplyr::rename(count_manual = count_PS_only) %>%
+  full_join(tmp_ag_12 %>%
+              dplyr::select(-dplyr::ends_with('count')) %>%
+              dplyr::rename(count_auto_all = count_PS_only),
+            by = 'SbiGecoordineerd3D') %>%
+  full_join(tmp_ag_1 %>%
+              dplyr::select(-dplyr::ends_with('count')) %>%
+              dplyr::rename(count_auto_deductive = count_PS_only),
+            by = 'SbiGecoordineerd3D') %>%
+  full_join(tmp_ag_2 %>%
+              dplyr::select(-dplyr::ends_with('count')) %>%
+              dplyr::rename(count_auto_errorloc = count_PS_only),
+            by = 'SbiGecoordineerd3D')
+```
+
+Number of errors found by analysts (manual) and by automatic editing steps:
+```{r, echo = FALSE}
+knitr::kable(table_manual1)
+```
+
+Number of errors found by analysts (manual) and by automatic editing steps, PS variables only:
+```{r, echo = FALSE}
+knitr::kable(table_manual1_PS_only)
+```
+
+
+### Comparison of errors found by automatic and manual editing
+
+```{r manual2, echo=FALSE}
+
+compare_errors <- function(comp_errors_ag, comp_errors_manual, PS_only = FALSE) {
+  
+  if (PS_only) {
+    select_vars <- comp_errors_manual %>%
+      dplyr::select(dplyr::ends_with(analyse_variables) & dplyr::starts_with('PS.')) %>%
+      colnames()
+  } else {
+    select_vars <- comp_errors_manual %>%
+      dplyr::select(dplyr::ends_with(analyse_variables)) %>%
+      colnames()
+  }
+  
+  tmp <- rbind(comp_errors_manual,
+               comp_errors_ag)
+  
+  tmp1 <- tmp %>%
+    dplyr::group_by(BE_ID) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(select_vars),
+                                   function(x) ifelse(is.na(x[1]),
+                                                      NA,
+                                                      ifelse(x[1] == TRUE & (x[2] == TRUE | is.na(x[2])),
+                                                             1,
+                                                             0)))) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(TP = sum(dplyr::across(dplyr::all_of(select_vars)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
+  
+  tmp2 <- tmp %>%
+    dplyr::group_by(BE_ID) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(select_vars),
+                                   function(x) ifelse(is.na(x[1]),
+                                                      NA,
+                                                      ifelse(x[1] == TRUE & !(x[2] == TRUE | is.na(x[2])),
+                                                             1,
+                                                             0)))) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(FN = sum(dplyr::across(dplyr::all_of(select_vars)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
+  
+  tmp3 <- tmp %>%
+    dplyr::group_by(BE_ID) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(select_vars),
+                                   function(x) ifelse(is.na(x[1]),
+                                                      NA,
+                                                      ifelse(x[1] == FALSE & (x[2] == TRUE | is.na(x[2])),
+                                                             1,
+                                                             0)))) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(FP = sum(dplyr::across(dplyr::all_of(select_vars)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
+  
+  tmp4 <- tmp %>%
+    dplyr::group_by(BE_ID) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(select_vars),
+                                   function(x) ifelse(is.na(x[1]),
+                                                      NA,
+                                                      ifelse(x[1] == FALSE & !(x[2] == TRUE | is.na(x[2])),
+                                                             1,
+                                                             0)))) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(TN = sum(dplyr::across(dplyr::all_of(select_vars)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
+
+  tmp_micro <- frame_manual %>%
+    dplyr::left_join(tmp1 %>% dplyr::select(c(BE_ID, TP)), by = 'BE_ID') %>%
+    dplyr::left_join(tmp2 %>% dplyr::select(c(BE_ID, FN)), by = 'BE_ID') %>%
+    dplyr::left_join(tmp3 %>% dplyr::select(c(BE_ID, FP)), by = 'BE_ID') %>%
+    dplyr::left_join(tmp4 %>% dplyr::select(c(BE_ID, TN)), by = 'BE_ID') %>%
+    dplyr::mutate(rhoC = as.integer((FN == 0) * (FP == 0)))
+  
+  tmp <- tmp_micro %>%
+    dplyr::group_by(SbiGecoordineerd3D) %>%
+    dplyr::summarise(n = n(),
+                     dplyr::across(c(TP, FN, FP, TN), sum),
+                     rhoC = sum(rhoC))
+  
+  tmp <- rbind(tmp,
+               tmp %>%
+                 dplyr::summarise(dplyr::across(-SbiGecoordineerd3D, ~sum(.x, na.rm = TRUE))) %>%
+                 dplyr::mutate(SbiGecoordineerd3D = 'total'))
+  
+  tmp <- tmp %>%
+    dplyr::mutate(rhoC = rhoC / n,
+                  recall = TP / (TP + FN),
+                  precision = TP / (TP + FP),
+                  F1 = 2 / (1/recall + 1/precision),
+                  accuracy = (TP + TN)/(TP + FN + FP + TN),
+                  n = NULL)
+  return(list(micro = tmp_micro, macro = tmp))
+}
+
+res_manual2_ag_12 <- compare_errors(comp_errors_ag_12,
+                                    comp_errors_manual)
+table_manual2_ag_12 <- res_manual2_ag_12$macro
+
+res_manual2_ag_1 <- compare_errors(comp_errors_ag_1,
+                                   comp_errors_manual)
+table_manual2_ag_1 <- res_manual2_ag_1$macro
+
+res_manual2_ag_12_PS_only <- compare_errors(comp_errors_ag_12,
+                                            comp_errors_manual,
+                                            PS_only = TRUE)
+table_manual2_ag_12_PS_only <- res_manual2_ag_12_PS_only$macro
+
+res_manual2_ag_1_PS_only <- compare_errors(comp_errors_ag_1,
+                                           comp_errors_manual,
+                                           PS_only = TRUE)
+table_manual2_ag_1_PS_only <- res_manual2_ag_1_PS_only$macro
+```
+
+Evaluation measures of automatic error localization (overall) compared to errors found by analysts:
+```{r, echo = FALSE}
+knitr::kable(table_manual2_ag_12 %>%
+               dplyr::mutate(dplyr::across(c(rhoC, recall, precision, F1, accuracy),
+                                           function(x) round(x, digits = 3))))
+```
+
+Evaluation measures of automatic error localization (overall) compared to errors found by analysts, PS variables only:
+```{r, echo = FALSE}
+knitr::kable(table_manual2_ag_12_PS_only %>%
+               dplyr::mutate(dplyr::across(c(rhoC, recall, precision, F1, accuracy),
+                                           function(x) round(x, digits = 3))))
+```
+
+
+Evaluation measures of automatic error localization (deductive correction only) compared to errors found by analysts:
+```{r, echo = FALSE}
+knitr::kable(table_manual2_ag_1 %>%
+               dplyr::mutate(dplyr::across(c(rhoC, recall, precision, F1, accuracy),
+                                           function(x) round(x, digits = 3))))
+```
+
+Evaluation measures of automatic error localization (deductive correction only) compared to errors found by analysts, PS variables only:
+```{r, echo = FALSE}
+knitr::kable(table_manual2_ag_1_PS_only %>%
+               dplyr::mutate(dplyr::across(c(rhoC, recall, precision, F1, accuracy),
+                                           function(x) round(x, digits = 3))))
+```
+
+
+Overview of data before and after automatic and manual editing exported to `r stringr::str_glue('{prefix_output}compare_to_manual_editing_{YEAR}.xlsx')`.
+
+```{r export_excel, echo = FALSE}
+
+comp_data_export <- bind_rows(
+  comp_data_ag_0 %>%
+    dplyr::mutate(status = '0. original data'),
+  comp_data_ag_1 %>%
+    dplyr::mutate(status = '1. after deductive corrections') %>%
+    dplyr::left_join(res_manual2_ag_1$micro %>%
+                       dplyr::select(c(BE_ID, TP, FN, FP, TN)),
+                     by = 'BE_ID'),
+  comp_data_ag_3 %>%
+    dplyr::select(-dplyr::starts_with('Echt.')) %>%
+    dplyr::mutate(status = '2. after automatic editing') %>%
+    dplyr::left_join(res_manual2_ag_12$micro %>%
+                       dplyr::select(c(BE_ID, TP, FN, FP, TN)),
+                     by = 'BE_ID'),
+  comp_data_manual %>%
+    dplyr::mutate(status = '3. after manual editing')
+) %>%
+  dplyr::left_join(data_ag_0 %>%
+                     dplyr::select(c(BE_ID, SbiGecoordineerd)),
+                   by = 'BE_ID') %>%
+  dplyr::relocate(c(SbiGecoordineerd, status, TP, FN, FP, TN), .after = BE_ID) %>%
+  dplyr::arrange(SbiGecoordineerd, BE_ID, status)
+
+wb <- createWorkbook()
+
+addWorksheet(wb, 'overview')
+writeData(wb, 'overview',
+          comp_data_export,
+          xy = c(1, 1), colNames = TRUE, rowNames = FALSE)
+addStyle(wb, 'overview',
+         createStyle(numFmt = '0.0'),
+         rows = 2:(nrow(comp_data_export)+1),
+         cols = 9:ncol(comp_data_export),
+         gridExpand = TRUE)
+setColWidths(wb, 'overview', 1:ncol(comp_data_export), widths = 'auto')
+
+saveWorkbook(wb,
+             file = file.path(OutputFolder, stringr::str_glue('{prefix_output}compare_to_manual_editing_{YEAR}.xlsx')),
+             overwrite = TRUE)
+```
+
+
+## Evaluation measures that do not use manually edited data
+
+### Percentage of errors found by automatic editing
+
+```{r prepare_errors_ag, echo = FALSE}
+
+## select records from data files
+
+frame_total <- data_ag_0 %>%
+  dplyr::select(c(BE_ID, OG_ID,
+                  SbiGecoordineerd3D, GkSbsGecoordineerd1D)) %>%
+  dplyr::arrange(BE_ID)
+
+comp_all_data_ag_0 <- data_ag_0 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(frame_total, by = 'BE_ID') %>%
+  dplyr::arrange(BE_ID)
+
+comp_all_data_ag_1 <- data_ag_1 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(frame_total, by = 'BE_ID') %>%
+  dplyr::select(names(comp_all_data_ag_0)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_all_data_ag_2 <- data_ag_3 %>%
+  dplyr::select(BE_ID) %>%
+  dplyr::left_join(data_ag_2 %>%
+                     dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))),
+                   by = 'BE_ID') %>%
+  dplyr::inner_join(frame_total, by = 'BE_ID') %>%
+  dplyr::select(c(names(comp_all_data_ag_0),
+                  dplyr::starts_with('Echt.'))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+comp_all_data_ag_3 <- data_ag_3 %>%
+  dplyr::select(c(BE_ID, dplyr::ends_with(analyse_variables))) %>%
+  dplyr::inner_join(frame_total, by = 'BE_ID') %>%
+  dplyr::select(c(names(comp_all_data_ag_0),
+                  dplyr::starts_with('Echt.'))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+
+## select (or create) records from error files
+
+comp_all_errors_ag_1 <- cbind(
+  comp_all_data_ag_1 %>% dplyr::select(BE_ID),
+  (comp_all_data_ag_1 %>% dplyr::select(dplyr::ends_with(analyse_variables)) !=
+     comp_all_data_ag_0 %>% dplyr::select(dplyr::ends_with(analyse_variables)))
+) %>%
+  dplyr::arrange(BE_ID)
+
+comp_all_errors_ag_2a <- comp_all_data_ag_3 %>%
+  dplyr::select(BE_ID) %>%
+  dplyr::left_join(errors_ag_2 %>%
+                     dplyr::select(c(BE_ID,
+                                     (dplyr::ends_with(analyse_variables) & !dplyr::starts_with('PS.')))),
+                   by = 'BE_ID')
+
+namen <- comp_all_data_ag_3 %>%
+  dplyr::select(dplyr::ends_with(analyse_variables) & dplyr::starts_with('PS.')) %>%
+  colnames()
+
+comp_all_errors_ag_2b <- cbind(
+  comp_all_data_ag_3 %>% dplyr::select(BE_ID),
+  abs(comp_all_data_ag_3 %>% dplyr::select(dplyr::all_of(namen)) -
+        comp_all_data_ag_0 %>%
+        dplyr::filter(BE_ID %in% comp_all_data_ag_3$BE_ID) %>%
+        dplyr::select(dplyr::all_of(namen))) >= 1
+)
+
+comp_all_errors_ag_2 <- comp_all_errors_ag_2a %>%
+  dplyr::inner_join(comp_all_errors_ag_2b, by = 'BE_ID') %>%
+  dplyr::select(names(comp_all_errors_ag_1)) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+
+# also create an overview of errors found anywhere during automatic editing
+
+comp_all_errors_ag_12 <- rbind(comp_all_errors_ag_1 %>%
+                             dplyr::select(dplyr::all_of(names(comp_all_errors_ag_2))),
+                           comp_all_errors_ag_2) %>%
+  dplyr::group_by(BE_ID) %>%
+  dplyr::summarise(dplyr::across(tidyr::everything(),
+                                 function(x) ifelse(all(is.na(x)),
+                                                    NA,
+                                                    as.logical(max(x, na.rm = TRUE))))) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(dplyr::any_of(names(comp_all_errors_ag_1))) %>% # same order of columns
+  dplyr::arrange(BE_ID)
+```
+
+Percentage of errors found by automatic error localization (all process steps), by variable:
+
+```{r count_errors_ag_12, echo=FALSE}
+## count errors by variable
+tmp <- comp_all_errors_ag_12 %>%
+  dplyr::left_join(frame_total %>%
+                     dplyr::select(c(BE_ID, SbiGecoordineerd3D)),
+                   by = 'BE_ID') %>%
+  dplyr::group_by(SbiGecoordineerd3D) %>%
+  dplyr::summarise(n = n(),
+                   dplyr::across(dplyr::ends_with(analyse_variables),
+                                 ~sum(.x, na.rm = TRUE)))
+
+tmp <- rbind(tmp,
+             tmp %>%
+               dplyr::summarise(dplyr::across(-SbiGecoordineerd3D,
+                                              ~sum(.x, na.rm = TRUE))) %>%
+               dplyr::mutate(SbiGecoordineerd3D = 'total'))
+
+perc_errors_ag_12 <- tmp %>%
+  dplyr::mutate(dplyr::across(dplyr::ends_with(analyse_variables),
+                              function(x) x / .data[['n']])) %>%
+  dplyr::select(-n) %>%
+  tidyr::pivot_longer(cols = -SbiGecoordineerd3D,
+                      names_to = 'variable',
+                      values_to = 'percentage') %>%
+  tidyr::pivot_wider(names_from = SbiGecoordineerd3D,
+                     values_from = percentage)
+
+knitr::kable(perc_errors_ag_12 %>%
+               dplyr::mutate(dplyr::across(-variable,
+                                           function(x) round(x, digits = 3))))
+```
+
+Percentage of errors found by automatic error localization (deductive correction only), by variable:
+
+```{r count_errors_ag_1, echo=FALSE}
+## count errors by variable
+tmp <- comp_all_errors_ag_1 %>%
+  dplyr::left_join(frame_total %>%
+                     dplyr::select(c(BE_ID, SbiGecoordineerd3D)),
+                   by = 'BE_ID') %>%
+  dplyr::group_by(SbiGecoordineerd3D) %>%
+  dplyr::summarise(n = n(),
+                   dplyr::across(dplyr::ends_with(analyse_variables),
+                                 ~sum(.x, na.rm = TRUE)))
+
+tmp <- rbind(tmp,
+             tmp %>%
+               dplyr::summarise(dplyr::across(-SbiGecoordineerd3D,
+                                              ~sum(.x, na.rm = TRUE))) %>%
+               dplyr::mutate(SbiGecoordineerd3D = 'total'))
+
+perc_errors_ag_1 <- tmp %>%
+  dplyr::mutate(dplyr::across(dplyr::ends_with(analyse_variables),
+                              function(x) x / .data[['n']])) %>%
+  dplyr::select(-n) %>%
+  tidyr::pivot_longer(cols = -SbiGecoordineerd3D,
+                      names_to = 'variable',
+                      values_to = 'percentage') %>%
+  tidyr::pivot_wider(names_from = SbiGecoordineerd3D,
+                     values_from = percentage)
+
+knitr::kable(perc_errors_ag_1 %>%
+               dplyr::mutate(dplyr::across(-variable,
+                                           function(x) round(x, digits = 3))))
+```
+
+
+### Comparison of totals before and after automatic editing
+
+```{r create_overview_variable, echo = FALSE}
+
+# auxiliary function to arrange the data at each editing step
+# for a particular common variable in a particular source:
+# - for PS, all values after editing (step 3) are already known
+# - for all other sources, identified errors have been replaced by missing values;
+#   here, we use the value of the 'true' edited common variable as a proxy
+
+create_overview_variable <- function(variable_name, bron,
+                                     other_variables) {
+  variable <- stringr::str_glue('{bron}.{variable_name}')
+  variable_echt <- stringr::str_glue('Echt.{variable_name}')
+  
+  if (bron == 'PS') {
+    
+    overview <- rbind(
+    data_ag_0 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '0'),
+    data_ag_1 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '1'),
+    data_ag_3 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '2')
+    ) %>%
+    dplyr::arrange(BE_ID, OG_ID, stage)
+    
+  } else {
+    
+    overview <- rbind(
+    data_ag_0 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '0'),
+    data_ag_1 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '1'),
+    data_ag_2 %>%
+      dplyr::left_join(data_ag_3 %>%
+                         dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), 
+                                         dplyr::all_of(stringr::str_glue('{bron}.exist')))),
+                       by = 'BE_ID') %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = stringr::str_glue('^{bron}.'),
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable)) %>%
+      dplyr::mutate(stage = '2'),
+    data_ag_3 %>%
+      dplyr::filter(!is.na(get(stringr::str_glue('{bron}.exist')))) %>%
+      dplyr::select(c(BE_ID, OG_ID, dplyr::any_of(other_variables), dplyr::all_of(variable_echt))) %>%
+      dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                                pattern = '^Echt.',
+                                                                replacement = ''),
+                         .cols = dplyr::all_of(variable_echt)) %>%
+      dplyr::mutate(stage = '3')
+    ) %>%
+    dplyr::arrange(BE_ID, OG_ID, stage)
+    
+    # if stage 2 value is missing (i.e., identified as erroneous), then copy
+    # common value from stage 3 as imputation
+    overview <- overview %>%
+      dplyr::left_join(overview %>%
+                         dplyr::group_by(BE_ID, OG_ID) %>%
+                         dplyr::summarise(temp = tail(get(variable_name), 1), .groups = 'drop'),
+                       by = c('BE_ID', 'OG_ID')) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(stringr::str_glue('{variable_name}')),
+                                  ~dplyr::coalesce(.x, temp))) %>%
+      dplyr::select(-temp) %>%
+      dplyr::filter(stage %in% c(0,1,2))
+  }
+  
+  # only keep BE_IDs that passed through all stages of automatic editing
+  overview <- overview %>%
+    dplyr::right_join(overview %>%
+                        dplyr::group_by(BE_ID, OG_ID) %>%
+                        dplyr::summarise(n = n(), .groups = 'drop') %>%
+                        dplyr::filter(n == 3) %>%
+                        dplyr::select(-n),
+                      by = c('BE_ID', 'OG_ID'))
+  
+  return(overview)
+}
+```
+
+
+
+```{r datasummary, echo=FALSE}
+
+summarise_data <- function(bron, variables, weight = NULL) {
+  
+  for (v in variables) {
+    tmp <- create_overview_variable(variable_name = v,
+                                    bron = bron,
+                                    other_variables = c('SbiGecoordineerd3D',
+                                                        'GkSbsGecoordineerdSML',
+                                                        weight))
+    
+    if (v == variables[1]) {
+      data_ag <- tmp
+    } else {
+      data_ag <- data_ag %>%
+        dplyr::left_join(tmp %>%
+                           dplyr::select(c(BE_ID, OG_ID, stage, dplyr::all_of(v))),
+                         by = c('BE_ID', 'OG_ID', 'stage'))
+    }
+  }
+  
+  data_ag <- data_ag %>%
+    dplyr::mutate(stage = dplyr::case_match(stage,
+                                            '0' ~ stringr::str_glue('0: {bron} raw'),
+                                            '1' ~ stringr::str_glue('1: {bron} after deduc.'),
+                                            '2' ~ stringr::str_glue('2: {bron} after auto.ed.')))
+  
+  summ <- data_ag %>%
+    dplyr::mutate(GkSbsGecoordineerdSML = factor(GkSbsGecoordineerdSML,
+                                                 levels = c('S', 'M', 'L'))) %>%
+    dplyr::group_by(SbiGecoordineerd3D, GkSbsGecoordineerdSML, stage) %>%
+    dplyr::summarise(n = n(),
+                     dplyr::across(dplyr::ends_with(variables),
+                                   function(x) sum(.data[[weight]] * x, na.rm = TRUE)),
+                     .groups = 'keep') %>%
+    tidyr::pivot_longer(cols = dplyr::ends_with(variables),
+                        names_to = 'variable', values_to = 'value') %>%
+    tidyr::pivot_wider(id_cols = c('SbiGecoordineerd3D', 'GkSbsGecoordineerdSML', 'variable', 'n'),
+                       names_from = 'stage', values_from = 'value')
+  
+  summ_sbi <- summ %>%
+    dplyr::group_by(SbiGecoordineerd3D, variable) %>%
+    dplyr::summarise(dplyr::across(-GkSbsGecoordineerdSML, function(x) sum(x, na.rm = TRUE)),
+                     .groups = 'keep')
+  
+  return(list(summ = summ, summ_sbi = summ_sbi))
+}
+
+summ_PS <- summarise_data(bron = 'PS',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('PS.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'PS.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+
+summ_DRT <- summarise_data(bron = 'DRT',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('DRT.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'DRT.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+
+summ_SWL <- summarise_data(bron = 'SWL',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('SWL.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'SWL.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+
+summ_WIA <- summarise_data(bron = 'WIA',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('WIA.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'WIA.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+
+summ_PCM <- summarise_data(bron = 'PCM',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('PCM.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'PCM.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+
+summ_INIVA <- summarise_data(bron = 'INIVA',
+                          variables = data_ag_0 %>%
+                            dplyr::select(dplyr::starts_with('INIVA.') &
+                                            dplyr::ends_with(unlist(variable_blocks))) %>%
+                            colnames() %>%
+                            stringr::str_replace(pattern = 'INIVA.', replacement = ''),
+                          weight = 'PS.Insluitgewicht')
+```
+
+
+Totals of PS variables before and after automatic editing (weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_PS$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+Totals of DRT variables before and after automatic editing (overlap with PS, weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_DRT$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+Totals of SWL variables before and after automatic editing (overlap with PS, weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_SWL$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+Totals of WIA variables before and after automatic editing (overlap with PS, weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_WIA$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+Totals of PCM variables before and after automatic editing (overlap with PS, weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_PCM$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+Totals of INIVA variables before and after automatic editing (overlap with PS, weighted by PS inclusion weights):
+```{r, echo = FALSE}
+knitr::kable(summ_INIVA$summ_sbi %>%
+               dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                           function(x) round(x, digits = 0))))
+```
+
+More detailed tables (including subdivision by size class) can be found the Excel file `r stringr::str_glue('{prefix_output}evaluation_totals_{YEAR}.xlsx')`.
+
+```{r, echo = FALSE}
+wb <- createWorkbook()
+
+for (bron in c('PS', 'DRT', 'SWL', 'WIA', 'PCM', 'INIVA')) {
+  temp <- get(stringr::str_glue('summ_{bron}'))$summ
+  
+  addWorksheet(wb, bron)
+  writeData(wb, bron,
+            temp,
+            xy = c(1, 1), colNames = TRUE, rowNames = FALSE)
+  addStyle(wb, bron,
+           createStyle(numFmt = '0'),
+           rows = 2:(nrow(temp)+1),
+           cols = 5:ncol(temp),
+           gridExpand = TRUE)
+  setColWidths(wb, bron, 1:ncol(temp), widths = 'auto')
+}
+
+saveWorkbook(wb,
+             file = file.path(OutputFolder, stringr::str_glue('{prefix_output}evaluation_totals_{YEAR}.xlsx')),
+             overwrite = TRUE)
+```
+
+
+### Comparison of values before and after automatic editing
+
+Univariate distributions:
+
+```{r univariate, echo=FALSE}
+
+make_plot_univariate <- function(variable_name, bron, useLog10 = TRUE) {
+  
+  variable <- stringr::str_glue('{bron}.{variable_name}')
+  
+  plotdata <- create_overview_variable(variable_name = variable_name,
+                                       bron = bron,
+                                       other_variables = 'SbiGecoordineerd3D')
+  
+  plotdata <- plotdata %>%
+    dplyr::mutate(stage = dplyr::case_match(stage,
+                                            '0' ~ stringr::str_glue('0: raw'),
+                                            '1' ~ stringr::str_glue('1: deduc.'),
+                                            '2' ~ stringr::str_glue('2: auto.ed.')))
+  
+  label_y_axis <- bron
+  
+  if (useLog10) {
+    plotdata <- plotdata %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(stringr::str_glue('{variable_name}')),
+                                  function(x) log10(x + 1)))
+    label_y_axis <- stringr::str_glue('{label_y_axis} (log10)')
+  }
+  
+  G <- ggplot2::ggplot(plotdata,
+                         aes(x = stage, y = get(variable_name),
+                             group = stage)) +
+      ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free_y') +
+      ggplot2::geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+      ggplot2::ggtitle(variable) +
+      ggplot2::ylab(label_y_axis)
+  
+  return(G)
+}
+
+G_list <- lapply(variables_plot_univariate, function(L)
+  make_plot_univariate(variable_name = L['variable_name'],
+                       bron = L['bron'], useLog10 = L['useLog10']))
+
+for (l in 1:length(G_list)) print(G_list[[l]])
+```
+
+Univariate distributions (before and after editing):
+
+```{r univariate_before_after, echo=FALSE}
+
+make_plot_univariate_before_after <- function(variable_name, bron, useLog10 = TRUE) {
+  
+  plotdata <- create_overview_variable(variable_name = variable_name,
+                                       bron = bron,
+                                       other_variables = c('SbiGecoordineerd3D', 'GkSbsGecoordineerd1D'))
+  
+  plotdata <- plotdata %>%
+    dplyr::right_join(plotdata %>%
+                        dplyr::group_by(BE_ID, OG_ID) %>%
+                        dplyr::summarise(n = n(), .groups = 'drop') %>%
+                        dplyr::filter(n == 3) %>%
+                        dplyr::select(-n),
+                      by = c('BE_ID', 'OG_ID'))
+  
+  
+  label_x_axis <- stringr::str_glue('{bron} before editing')
+  label_y_axis <- stringr::str_glue('{bron} after editing')
+  
+  if (useLog10) {
+    plotdata <- plotdata %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(stringr::str_glue('{variable_name}')),
+                                  function(x) log10(x + 1)))
+    label_x_axis <- stringr::str_glue('{label_x_axis} (log10)')
+    label_y_axis <- stringr::str_glue('{label_y_axis} (log10)')
+  }
+  
+  plotdata <- plotdata %>%
+    tidyr::pivot_wider(id_cols = c(BE_ID, OG_ID, SbiGecoordineerd3D, GkSbsGecoordineerd1D),
+                       names_from = stage,
+                       values_from = dplyr::all_of(stringr::str_glue('{variable_name}'))) %>%
+    dplyr::mutate(size_class = as.integer(GkSbsGecoordineerd1D))
+  
+  
+  G <- ggplot2::ggplot(plotdata,
+                         aes(x = get('0'), y = get('2'),
+                             group = BE_ID)) +
+      ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free_y') +
+      ggplot2::geom_point(aes(color = size_class)) +
+      ggplot2::scale_color_gradient2(guide = 'legend',
+                                     low = 'red', mid = 'yellow', high = 'blue',
+                                     midpoint = 4) +
+      ggplot2::geom_abline(slope = 1, intercept = 0, color = 'gray50') +
+      ggplot2::xlim(c(0, NA)) + ggplot2::ylim(c(0, NA)) +
+      ggplot2::xlab(label_x_axis) +
+      ggplot2::ylab(label_y_axis) +
+      ggplot2::ggtitle(variable_name)
+  
+  return(G)
+}
+
+G_list <- lapply(variables_plot_univariate, function(L)
+  make_plot_univariate_before_after(variable_name = L['variable_name'],
+                       bron = L['bron'], useLog10 = L['useLog10']))
+
+for (l in 1:length(G_list)) print(G_list[[l]])
+```
+
+
+
+Bivariate distributions - original values of common variable in two sources:
+
+```{r bivariate_twosources, echo=FALSE}
+
+make_plot_bivariate_twosources <- function(variable_name, bron_x, bron_y, useLog10 = TRUE) {
+  
+  variable_x <- stringr::str_glue('{bron_x}.{variable_name}')
+  variable_y <- stringr::str_glue('{bron_y}.{variable_name}')
+  
+  data_ag_x <- create_overview_variable(variable_name = variable_name,
+                                        bron = bron_x,
+                                        other_variables = 'SbiGecoordineerd3D') %>%
+    dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                              pattern = variable_name,
+                                                              replacement = variable_x),
+                       .cols = dplyr::all_of(stringr::str_glue('{variable_name}')))
+  
+  data_ag_y <- create_overview_variable(variable_name = variable_name,
+                                        bron = bron_y,
+                                        other_variables = 'SbiGecoordineerd3D') %>%
+    dplyr::rename_with(.fn = function(x) stringr::str_replace(x,
+                                                              pattern = variable_name,
+                                                              replacement = variable_y),
+                       .cols = dplyr::all_of(stringr::str_glue('{variable_name}')))
+  
+  data_ag <- data_ag_x %>%
+        dplyr::inner_join(data_ag_y %>%
+                            dplyr::select(c(BE_ID, OG_ID, stage, dplyr::all_of(variable_y))),
+                          by = c('BE_ID', 'OG_ID', 'stage'))
+  
+  data_ag <- data_ag %>%
+    dplyr::mutate(stage = dplyr::case_match(stage,
+                                            '0' ~ stringr::str_glue('0: raw'),
+                                            '1' ~ stringr::str_glue('1: after deduc.'),
+                                            '2' ~ stringr::str_glue('2: after auto.ed.')))
+  aux <- data_ag %>%
+    dplyr::group_by(BE_ID, OG_ID, SbiGecoordineerd3D) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(c(variable_x, variable_y)),
+                                   function(z) ifelse(is.na(z[1]),
+                                                      NA,
+                                                      ifelse(z[1] == z[2],
+                                                             ifelse(!is.na(z[3]) & z[1] == z[3], 0, 2),
+                                                             ifelse(!is.na(z[3]) & z[2] == z[3], 1, 2)))),
+                     .groups = 'keep') %>%
+    dplyr::rename(status_x = dplyr::all_of(variable_x),
+                  status_y = dplyr::all_of(variable_y)) %>%
+    dplyr::ungroup()
+  
+  plotdata_raw <- data_ag %>%
+    dplyr::filter(stage == '0: raw') %>%
+    tidyr::drop_na() %>%
+    dplyr::left_join(aux %>%
+                       dplyr::select(c(BE_ID, OG_ID, dplyr::starts_with('status'))),
+                     by = c('BE_ID', 'OG_ID')) %>%
+    dplyr::mutate(status_combined = 10*status_x + status_y,
+                  status_changed = factor(ifelse(status_combined == 0, 0,
+                                                 ifelse(status_combined < 10, 1,
+                                                        ifelse(status_combined %% 10 == 0, 2, 3))),
+                                          levels = c(0, 1, 2, 3),
+                                          labels = c(stringr::str_glue('{bron_x}: not changed, {bron_y}: not changed'),
+                                                     stringr::str_glue('{bron_x}: not changed, {bron_y}: changed'),
+                                                     stringr::str_glue('{bron_x}: changed, {bron_y}: not changed'),
+                                                     stringr::str_glue('{bron_x}: changed, {bron_y}: changed'))),
+                  status_type = factor(ifelse(status_combined == 0, 0,
+                                              ifelse(status_combined %in% c(1, 10, 11), 1, 2)),
+                                       levels = c(0, 1, 2),
+                                       labels = c('no changes',
+                                                  'only deductive changes',
+                                                  'changes due to error localization')))
+  
+  plotdata_edited <- data_ag %>%
+    dplyr::filter(stage == '2: after auto.ed.') %>%
+    tidyr::drop_na() %>%
+    dplyr::left_join(aux %>%
+                       dplyr::select(c(BE_ID, OG_ID, dplyr::starts_with('status'))),
+                     by = c('BE_ID', 'OG_ID')) %>%
+    dplyr::mutate(status_combined = 10*status_x + status_y,
+                  status_changed = factor(ifelse(status_combined == 0, 0,
+                                                 ifelse(status_combined < 10, 1,
+                                                        ifelse(status_combined %% 10 == 0, 2, 3))),
+                                          levels = c(0, 1, 2, 3),
+                                          labels = c(stringr::str_glue('{bron_x}: not changed, {bron_y}: not changed'),
+                                                     stringr::str_glue('{bron_x}: not changed, {bron_y}: changed'),
+                                                     stringr::str_glue('{bron_x}: changed, {bron_y}: not changed'),
+                                                     stringr::str_glue('{bron_x}: changed, {bron_y}: changed'))),
+                  status_type = factor(ifelse(status_combined == 0, 0,
+                                              ifelse(status_combined %in% c(1, 10, 11), 1, 2)),
+                                       levels = c(0, 1, 2),
+                                       labels = c('no changes',
+                                                  'only deductive changes',
+                                                  'changes due to error localization')))
+  
+  label_x_axis <- bron_x
+  label_y_axis <- bron_y
+  
+  if (useLog10) {
+    plotdata_raw <- plotdata_raw %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(c(variable_x, variable_y)),
+                                function(x) log10(x + 1)))
+    plotdata_edited <- plotdata_edited %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(c(variable_x, variable_y)),
+                                function(x) log10(x + 1)))
+    label_x_axis <- stringr::str_glue('{label_x_axis} (log10)')
+    label_y_axis <- stringr::str_glue('{label_y_axis} (log10)')
+  }
+  
+  G_raw <- ggplot2::ggplot(plotdata_raw,
+                           aes(x = get(variable_x), y = get(variable_y),
+                               group = SbiGecoordineerd3D, color = status_changed,
+                               shape = status_type)) +
+    ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free') +
+    ggplot2::geom_point(alpha = 0.5) +
+    ggplot2::scale_color_manual(values = c('black', 'blue', 'red', 'purple'), drop = FALSE) +
+    ggplot2::scale_shape_manual(values = c(16, 15, 17), drop = FALSE) +
+    ggplot2::geom_abline(slope = 1, intercept = 0, color = 'gray50') +
+    ggplot2::xlim(c(0, NA)) + ggplot2::ylim(c(0, NA)) +
+    ggplot2::ggtitle(stringr::str_glue('{variable_name} - {bron_x} and {bron_y} (raw data)')) +
+    ggplot2::xlab(label_x_axis) +
+    ggplot2::ylab(label_y_axis)
+  
+  G_edited <- ggplot2::ggplot(plotdata_edited,
+                              aes(x = get(variable_x), y = get(variable_y),
+                                  group = SbiGecoordineerd3D, color = status_changed,
+                                  shape = status_type)) +
+    ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free') +
+    ggplot2::geom_point(alpha = 0.5) +
+    ggplot2::scale_color_manual(values = c('black', 'blue', 'red', 'purple'), drop = FALSE) +
+    ggplot2::scale_shape_manual(values = c(16, 15, 17), drop = FALSE) +
+    ggplot2::geom_abline(slope = 1, intercept = 0, color = 'gray50') +
+    ggplot2::xlim(c(0, NA)) + ggplot2::ylim(c(0, NA)) +
+    ggplot2::ggtitle(stringr::str_glue('{variable_name} - {bron_x} and {bron_y} (edited data)')) +
+    ggplot2::xlab(label_x_axis) +
+    ggplot2::ylab(label_y_axis)
+  
+  return(list(G_raw = G_raw, G_edited = G_edited))
+}
+
+G_list <- lapply(variables_plot_bivariate_twosources, function(L)
+  make_plot_bivariate_twosources(variable_name = L['variable_name'],
+                                 bron_x = L['bron_x'], bron_y = L['bron_y'],
+                                 useLog10 = L['useLog10']))
+
+for (l in 1:length(G_list)) {
+  print(G_list[[l]]['G_raw'])
+  print(G_list[[l]]['G_edited'])
+}
+```
+
+
+Bivariate distributions - final edited values of two related common variables:
+
+```{r bivariate_different, echo = FALSE}
+
+make_plot_bivariate_different <- function(variable_name_x, variable_name_y, useLog10 = TRUE) {
+  
+  variable_x <- stringr::str_glue('Echt.{variable_name_x}')
+  variable_y <- stringr::str_glue('Echt.{variable_name_y}')
+  
+  plotdata <- data_ag_3 %>%
+    dplyr::select(c(SbiGecoordineerd3D, useAsReference, dplyr::all_of(c(variable_x, variable_y)))) %>%
+    tidyr::drop_na() %>%
+    dplyr::mutate(status = factor(useAsReference,
+                                  levels = c(0, 1),
+                                  labels = c('reference = FALSE', 'reference = TRUE')))
+  
+  if (useLog10) {
+    plotdata <- plotdata %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(c(variable_x, variable_y)),
+                                function(x) log10(x + 1)))
+  
+    G <- ggplot2::ggplot(plotdata,
+                         aes(x = get(variable_x), y = get(variable_y),
+                             group = SbiGecoordineerd3D, color = status)) +
+      ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free') +
+      ggplot2::geom_point(alpha = 0.5) +
+      ggplot2::geom_abline(slope = 1, intercept = 0, color = 'gray50') +
+      ggplot2::xlim(c(0, NA)) + ggplot2::ylim(c(0, NA)) +
+      ggplot2::ggtitle(stringr::str_glue('{variable_name_x} and {variable_name_y}')) +
+      ggplot2::xlab(stringr::str_glue('{variable_name_x} (log10)')) +
+      ggplot2::ylab(stringr::str_glue('{variable_name_y} (log10)'))
+  
+  } else {
+    
+    G <- ggplot2::ggplot(plotdata,
+                         aes(x = get(variable_x), y = get(variable_y),
+                             group = SbiGecoordineerd3D, color = status)) +
+      ggplot2::facet_wrap(facets =~ SbiGecoordineerd3D, scales = 'free') +
+      ggplot2::geom_point(alpha = 0.5) +
+      ggplot2::geom_abline(slope = 1, intercept = 0, color = 'gray50') +
+      ggplot2::xlim(c(0, NA)) + ggplot2::ylim(c(0, NA)) +
+      ggplot2::ggtitle(stringr::str_glue('{variable_name_x} and {variable_name_y}')) +
+      ggplot2::xlab(variable_name_x) +
+      ggplot2::ylab(variable_name_y)
+    
+  }
+  
+  return(G)
+}
+
+G_list <- lapply(variables_plot_bivariate_different, function(L)
+  make_plot_bivariate_different(variable_name_x = L['variable_name_x'],
+                                variable_name_y = L['variable_name_y'],
+                                useLog10 = L['useLog10']))
+
+for (l in 1:length(G_list)) print(G_list[[l]])
+```

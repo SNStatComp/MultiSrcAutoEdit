@@ -1,0 +1,34 @@
+Naam;PS;PCM;SFGO;DRT;KICR;SWL;IH;WIA;INIVA
+Netto_Omzet_minus_accijnzen;PS.OMZETPS210000 - PS.BEDRLST349610;;;DRT.omzet;KICR.OMZETKS210000 + KICR.OMZETKS100000;;;WIA.V_1886;
+Omzet_Industrieel_minus_accijnzen;PS.OMZETPS211150 + PS.OMZETPS211140 + PS.OMZETPS211250 + PS.EXPORTS211001 - PS.BEDRLST349610;PCM.Prodcom_codes_diensten + PCM.Prodcom_codes_producten_ZVV + PCM.In_het_buitenland_zelfvervaardigde_producten + PCM.Door_derden_in_loondienst_zelfvervaardigde_producten_tolling + PCM.In_het_buitenland_uitgevoerde_industriele_diensten;;;KICR.OMZETKS211010 + KICR.OMZETKS211020;;;;
+Omzet_Handel_en_Overig;PS.OMZETPS212000 + PS.OMZETPS213000 + PS.OMZETPS212100 + PS.OMZETPS212200 + PS.OMZETPS212300 + PS.OMZETPS212900 + PS.OMZETPS213008 + PS.OMZETPS213009 + PS.OMZETPS213100 + PS.OMZETPS213200 + PS.OMZETPS213300 + PS.OMZETPS213400 + PS.OMZETPS213500 + PS.OMZETPS213610 + PS.OMZETPS213700 + PS.OMZETPS213900 + PS.OMZETPS213910 + PS.OMZETPS214000 + PS.OMZETPS215000;PCM.Handelsgoederen + PCM.Overige_niet_industriele_dienstverlening_en_overige_activiteiten;;;KICR.OMZETKS212010 + KICR.OMZETKS212020;;;;
+Netto_Omzet_minus_accijnzen_minus_doorberekende_vrachtkosten;PS.OMZETPS210000 - PS.BEDRLST349610 - PS.OMZETPS210002;PCM.Prodcom_codes_diensten + PCM.Prodcom_codes_producten_ZVV + PCM.In_het_buitenland_zelfvervaardigde_producten + PCM.Door_derden_in_loondienst_zelfvervaardigde_producten_tolling + PCM.In_het_buitenland_uitgevoerde_industriele_diensten + PCM.Handelsgoederen + PCM.Overige_niet_industriele_dienstverlening_en_overige_activiteiten;;;;;;;
+Omzet_Zelfvervaardigd_Nederland_minus_accijnzen_minus_doorberekende_vrachtkosten;PS.OMZETPS211150 - PS.BEDRLST349610 - PS.OMZETPS210002;PCM.Prodcom_codes_producten_ZVV_zonder_tolling + PCM.Door_derden_in_loondienst_zelfvervaardigde_producten_tolling;;;;;;;
+Omzet_Industriele_Diensten;PS.OMZETPS211250 + PS.EXPORTS211001;PCM.Prodcom_codes_producten_ZVV_met_tolling + PCM.Prodcom_codes_diensten + PCM.In_het_buitenland_uitgevoerde_industriele_diensten;;;;;;;
+Werknemers_in_vte_Gemiddeld;PS.PERSONS110100;;SFGO.WVR605;;;SWL.Volbaangewicht;;;
+Productie_SFO;PS.OPBRENG000000 + PS.EXPORTS229002 - PS.SUBSIDI150000 - PS.SUBSIDI160000 - PS.SUBSIDI170000 - PS.SUBSIDI180000 - PS.SUBSIDI130000;;SFGO.WVR450 + SFGO.Verkopen_BA003 + SFGO.Verkopen_BA005 + SFGO.Verkopen_BA006 + SFGO.Verkopen_BA009 - SFGO.VerkopenOpbrengstwaarde_BA003 - SFGO.VerkopenOpbrengstwaarde_BA005 - SFGO.VerkopenOpbrengstwaarde_BA006 - SFGO.VerkopenOpbrengstwaarde_BA009;;;;;;
+Subsidies;PS.SUBSIDI140000 + PS.SUBSIDI150000 +PS.SUBSIDI160000 + PS.SUBSIDI170000 + PS.SUBSIDI180000 + PS.SUBSIDI130000;;SFGO.WVR470;;;;;;
+Afschrijvingen_excl_die_op_operational_lease;PS.AFSCHRG110000 + PS.AFSCHRG110010 + PS.AFSCHRG110020 + PS.AFSCHRG110090;;-SFGO.WVR458 - SFGO.WVR459;;;;;;
+Afschrijvingen_op_operational_Lease;PS.AFSCHRG110030;;-SFGO.WVR457;;;;;;
+Reversals_Impairments;PS.IMPAIRM100000;;SFGO.WVR468;;;;;;
+Arbeidskosten;PS.LOONSOM110002 + PS.LOONSOM121200 + PS.LOONSOM121300 + PS.BEDRLST345500 + PS.BEDRLST345600 + PS.BEDRLST345700 + PS.BEDRLST345900 + PS.SUBSIDI140000 + PS.INKWRDE120310 + PS.INKWRDE120320 + PS.INKWRDE120330;;-SFGO.WVR455;;;;;WIA.V_1926 + WIA.V_1930 + WIA.V_1932 + WIA.V_1934;
+Saldo_boekwinsten_verliezen_op_Verkopen_iMVA;PS.BUIBATN101000;;-SFGO.Verkopen_BA003 - SFGO.Verkopen_BA005 - SFGO.Verkopen_BA006 - SFGO.Verkopen_BA009 + SFGO.VerkopenOpbrengstwaarde_BA003 + SFGO.VerkopenOpbrengstwaarde_BA005 + SFGO.VerkopenOpbrengstwaarde_BA006 + SFGO.VerkopenOpbrengstwaarde_BA009;;;;;;
+Saldo_Uitzonderlijke_Baten_Lasten;PS.BUIBATN109000;;SFGO.WVR530 + SFGO.WVR535;;;;;;
+Exploitatie_Overschot;PS.RESULTS120000 + PS.VOORZNG101000 + PS.IMPAIRM100000;;SFGO.WVR475 + SFGO.Verkopen_BA003 + SFGO.Verkopen_BA005 + SFGO.Verkopen_BA006 + SFGO.Verkopen_BA009 - SFGO.VerkopenOpbrengstwaarde_BA003 - SFGO.VerkopenOpbrengstwaarde_BA005 - SFGO.VerkopenOpbrengstwaarde_BA006 - SFGO.VerkopenOpbrengstwaarde_BA009;;;;;;
+EBITDA;PS.RESULTS120000 + PS.VOORZNG101000 + PS.AFSCHRG110000 + PS.AFSCHRG110010 + PS.AFSCHRG110020 + PS.AFSCHRG110090 + PS.FINREST100010;;SFGO.WVR475 + SFGO.Verkopen_BA003 + SFGO.Verkopen_BA005 + SFGO.Verkopen_BA006 + SFGO.Verkopen_BA009 - SFGO.VerkopenOpbrengstwaarde_BA003 - SFGO.VerkopenOpbrengstwaarde_BA005 - SFGO.VerkopenOpbrengstwaarde_BA006 - SFGO.VerkopenOpbrengstwaarde_BA009 - SFGO.WVR468 - SFGO.WVR458 - SFGO.WVR459 + SFGO.WVR508;;;;;;
+Financieel_Resultaat_Op_Lease;PS.FINREST100010;;SFGO.WVR508;;;;;;
+Lonen;PS.LOONSOM110002 + PS.ONTVANG120000 + PS.SUBSIDI140000 + PS.INKWRDE120310;;;;;SWL.Loontotovwbijz;;WIA.V_1926;
+Sociale_lasten;PS.LOONSOM121300 + PS.INKWRDE120320;;;;;;;WIA.V_1930;
+Pensioenlasten;PS.LOONSOM121200 + PS.INKWRDE120330;;;;;;;WIA.V_1932;
+Overige_personeelskosten;PS.BEDRLST345500 + PS.BEDRLST345600 + PS.BEDRLST345700 + PS.BEDRLST345900 + PS.SUBSIDI140000;;;;;;;WIA.V_1934;
+Inkoopwaarde_Omzet;PS.INKWRDE100000;;;;;;;WIA.V_1920 + WIA.V_1922;
+Uitbesteed_werk;PS.INKWRDE132000;;;;;;;WIA.V_1922;
+Inkoopwaarde_Omzet_excl_uitbesteed;PS.INKWRDE100000 - PS.INKWRDE132000;;;;;;;WIA.V_1920;
+Marge_omzet;PS.OMZETPS210000 - PS.BEDRLST349610 - PS.INKWRDE100000;;;;;;;WIA.V_1886 - WIA.V_1920 - WIA.V_1922;
+Import;;;-SFGO.WVR461;;;;IH.import_diensten + IH.import_goederen;;
+Export;;;SFGO.WVR446;;;;IH.export_diensten + IH.export_goederen;;
+Investeringen_materiele_vaste_activa_INIVA_WIA;;;;;;;;WIA.V_1762 + WIA.V_1944 + WIA.V_1948 + WIA.V_1954 - WIA.Tm1_V_1762 + (WIA.V_1762/(WIA.V_1746+WIA.V_1762))*WIA.V_10728;INIVA.C014004
+Investeringen_immateriele_vaste_activa_INIVA_WIA;;;;;;;;WIA.V_1746 + WIA.V_10606 + WIA.V_10607 - WIA.Tm1_V_1746 + (WIA.V_1746/(WIA.V_1746+WIA.V_1762))*WIA.V_10728;INIVA.C017004
+Investeringen_materiele_vaste_activa_INIVA_SFGO;;;SFGO.Aankopen_detailregelBA006 + SFGO.Aankopen_detailregelBA009;;;;;;INIVA.C014004 + INIVA.F002001 - INIVA.F001001
+Investeringen_immateriele_vaste_activa_INIVA_SFGO;;;SFGO.Aankopen_detailregelBA005;;;;;;INIVA.C017004
+Investeringen_op_lease_INIVA_SFGO;;;SFGO.Aankopen_detailregelBA003;;;;;;INIVA.C001005 + INIVA.C002005 + INIVA.C003005 + INIVA.C004005 + INIVA.C005005 + INIVA.C006005 + INIVA.C007005 + INIVA.C008005 + INIVA.C009005 + INIVA.C010005 + INIVA.C011005 + INIVA.C012005 + INIVA.C013005
